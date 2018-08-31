@@ -13,6 +13,11 @@
           <input name="topic" type="text" class="ghost-input" placeholder="Enter a Topic" required>
           <input type="submit" class="ghost-button" value="Search Videos & Images">
         </form>
+        <% if (videos != null) {%>
+          <% for (var i = 0; i < videos.length; i++){%>
+          <a href= 'https://youtu.be/<%=videos[i].id.videoId %>'><img src= <%=videos[i].snippet.thumbnails.default.url %> ></a>
+          <h3><%= videos[i].snippet.title %></h3>
+          <% } }%>
       </fieldset>
     </div>
   </body>

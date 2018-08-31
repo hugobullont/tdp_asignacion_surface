@@ -1,48 +1,52 @@
 'use strict';
 
-const {google} = require('googleapis');
+const {
+  google
+} = require('googleapis');
 const bodyParser = require('body-parser');
 const express = require('express');
 
 const app = express();
 const youtube = google.youtube({
   version: 'v3',
-  auth: 'YourAPIKey'
+  auth: 'AIzaSyDaEauwiAKCmy7nLJ6J7BOcE6CDMPZGo3I'
 });
 
-async function runQuery (topic) {
-  const res = await youtube.search.list({
-    part: 'id,snippet',
-    q: topic,
-    maxResults: 10
-  });
-
-  var videos = res.data.items;
-
-  for(var i = 0; i < videos.length; i++){
-    console.log(videos[i].snippet.title);
-    console.log(videos[i].snippet.thumbnails.high.url)
-  }
-
-
-}
-
-
+var videos;
 
 app.set('view engine', 'ejs')
 app.use(express.static('public'));
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 
-app.listen(3000, function () {
+app.listen(3000, function() {
   console.log('Example app listening on port 3000!');
 })
 
-app.get('/', function (req, res) {
-  res.render('index');
+app.get('/', function(req, res) {
+  res.render('index', {
+    videos: null
+  });
 })
 
-app.post('/', function (req, res) {
-  res.render('index');
+app.post('/', function(req, resp) {
   console.log(req.body.topic);
-  runQuery(req.body.topic).catch(console.error);
+  var topic = req.body.topic;
+  youtube.search.list({
+    part: 'id,snippet',
+    q: topic,
+    maxResults: 5,
+    type: 'video'
+  }, (err, res) => {
+    if (err) {
+      console.error(err);
+      throw err;
+    }
+    videos = res.data.items;
+    console.log(videos[0].snippet.thumbnails.high)
+    resp.render('index', {
+      videos: videos
+    });
+  });
 })
