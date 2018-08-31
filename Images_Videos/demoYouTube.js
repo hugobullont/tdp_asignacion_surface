@@ -4,7 +4,7 @@ const {google} = require('googleapis');
 
 const youtube = google.youtube({
   version: 'v3',
-  auth: 'AIzaSyDaEauwiAKCmy7nLJ6J7BOcE6CDMPZGo3I'
+  auth: 'YourAPIKey'
 });
 
 async function runQuery () {
