@@ -10,7 +10,7 @@ const app = express();
 //YouTubeAPI
 const youtube = google.youtube({
   version: 'v3',
-  auth: 'YouTubeAPIKey'
+  auth: 'AIzaSyDaEauwiAKCmy7nLJ6J7BOcE6CDMPZGo3I'
 });
 //GoogleCustomSearchAPI
 const customsearch = google.customsearch('v1');
@@ -54,8 +54,8 @@ app.post('/', function(req, resp) {
   //customsearch for Images
   const options = {
     q: topic,
-    key: 'CustomSearchAPIKey',
-    cx: 'CustomSearchEngineID',
+    key: 'AIzaSyCsIZCL3df-lT7NHLIInzxpAi9Np29o91Q',
+    cx: '016143415256464023266:3sdn5_9xwu8',
     searchType: 'image',
     num: 5
   };
