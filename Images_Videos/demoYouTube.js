@@ -7,12 +7,16 @@ const bodyParser = require('body-parser');
 const express = require('express');
 
 const app = express();
+//YouTubeAPI
 const youtube = google.youtube({
   version: 'v3',
-  auth: 'YourAPIKey'
+  auth: 'YouTubeAPIKey'
 });
+//GoogleCustomSearchAPI
+const customsearch = google.customsearch('v1');
 
-var videos;
+var videos = null;
+var images = null;
 
 app.set('view engine', 'ejs')
 app.use(express.static('public'));
@@ -33,6 +37,7 @@ app.get('/', function(req, res) {
 app.post('/', function(req, resp) {
   console.log(req.body.topic);
   var topic = req.body.topic;
+  //youtube search
   youtube.search.list({
     part: 'id,snippet',
     q: topic,
@@ -44,9 +49,31 @@ app.post('/', function(req, resp) {
       throw err;
     }
     videos = res.data.items;
-    console.log(videos[0].snippet.thumbnails.high)
+  });
+  //customsearch for Images
+  const options = {
+    q: topic,
+    key: 'CustomSearchAPIKey',
+    cx: 'CustomSearchEngineID',
+    searchType: 'image',
+    num: 5
+  };
+
+  customsearch.cse.list({
+    q: options.q,
+    key: options.key,
+    cx: options.cx,
+    searchType: options.searchType,
+    num: options.num
+  }, (err, res) => {
+    if (err) {
+      console.error(err);
+      throw err;
+    }
+    images = res.data.items
     resp.render('index', {
-      videos: videos
-    });
+      videos: videos,
+      images: images
+    })
   });
 })

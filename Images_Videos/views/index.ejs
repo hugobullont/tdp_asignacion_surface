@@ -13,10 +13,16 @@
           <input name="topic" type="text" class="ghost-input" placeholder="Enter a Topic" required>
           <input type="submit" class="ghost-button" value="Search Videos & Images">
         </form>
+        <% if (images != null) {%>
+          <h2>Images</h2>
+          <% for (var i = 0; i < images.length; i++){%>
+          <a href= <%= images[i].link %>><img width="300" src= <%=images[i].link %> ></a>
+          <% } }%>
         <% if (videos != null) {%>
+          <h2>Videos</h2>
           <% for (var i = 0; i < videos.length; i++){%>
-          <a href= 'https://youtu.be/<%=videos[i].id.videoId %>'><img src= <%=videos[i].snippet.thumbnails.default.url %> ></a>
-          <h3><%= videos[i].snippet.title %></h3>
+          <a href= 'https://youtu.be/<%=videos[i].id.videoId %>'><img src= <%=videos[i].snippet.thumbnails.medium.url %> ></a>
+          <!--<p><%= videos[i].snippet.title %></p>-->
           <% } }%>
       </fieldset>
     </div>
