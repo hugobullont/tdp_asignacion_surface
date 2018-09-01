@@ -30,7 +30,8 @@ app.listen(3000, function() {
 
 app.get('/', function(req, res) {
   res.render('index', {
-    videos: null
+    videos: null,
+    images: null
   });
 })
 
