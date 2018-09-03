@@ -1,70 +1,66 @@
-const fs = require('fs');
-const readline = require('readline');
 const {google} = require('googleapis');
+const express = require('express')
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly'];
 const TOKEN_PATH = 'token.json';
+const CLIENT_ID = "821489341441-jjdo96m1j05mgqnbupom3b6jdlamg0n3.apps.googleusercontent.com"
+const CLIENT_SECRET = "5YVJWH3QHZjxVEXrR8TFJnfx"
+const REDIRECT_URL = "http://localhost:3000/drive/oauthcallback"
+const googleOauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL)
 
-fs.readFile('credentials.json', (err, content) => {
-  if (err) return console.log('Error loading client secret file:', err);
-  authorize(JSON.parse(content), listFiles);
+google.options({
+  auth: googleOauth2Client
 });
 
-function authorize(credentials, callback) {
-  const {client_secret, client_id, redirect_uris} = credentials.installed;
-  const oAuth2Client = new google.auth.OAuth2(
-      client_id, client_secret, redirect_uris[0]);
+const app = express()
+app.set('view engine', 'ejs')
+app.use(express.static('public'))
 
-    fs.readFile(TOKEN_PATH, (err, token) => {
-    if (err) return getAccessToken(oAuth2Client, callback);
-    oAuth2Client.setCredentials(JSON.parse(token));
-    callback(oAuth2Client);
-  });
-}
+app.listen(3000, function(){
+  console.log('Example app listening on port 3000!');
+})
 
-function getAccessToken(oAuth2Client, callback) {
-  const authUrl = oAuth2Client.generateAuthUrl({
+app.get('/drive', function(req,res){
+  const authUrl = googleOauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
-  });
-  console.log('Authorize this app by visiting this url:', authUrl);
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-  rl.question('Enter the code from that page here: ', (code) => {
-    rl.close();
-    oAuth2Client.getToken(code, (err, token) => {
-      if (err) return console.error('Error retrieving access token', err);
-      oAuth2Client.setCredentials(token);
-      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) console.error(err);
-        console.log('Token stored to', TOKEN_PATH);
-      });
-      callback(oAuth2Client);
-    });
-  });
-}
+  })
+  res.redirect(authUrl)  
+})
 
-function listFiles(auth) {
-  const drive = google.drive({version: 'v3', auth});
-  drive.files.list({
-    includeRemoved: false,
-    fields: 'nextPageToken, files(id, name, parents, mimeType, modifiedTime)',
-    spaces: 'drive'
-  }, (err, res) => {
-    if (err) return console.log('The API returned an error: ' + err);
-    const files = res.data.files;
-    if (files.length) {
-      files.map((file) => {
-        if (file.mimeType !== 'application/vnd.google-apps.folder') {
-          console.log(`File: ${file.name} (${file.id})`);
-        } else {
-          console.log(`Directory: ${file.name} (${file.id})`);
-        }
-      });
-    } else {
-      console.log('No files found.');
-    }
-  });
-}
+app.get('/drive/home/', async function(req,res){
+  try{
+    const drive = google.drive({version: 'v3'});
+    const result = await drive.files.list({
+      includeRemoved: false,
+      fields: 'files(id, name, mimeType)',
+      spaces: 'drive',
+    })
+
+    result.data.files.map((file) => {
+      if (file.mimeType !== 'application/vnd.google-apps.folder') {
+        console.log(`File: ${file.name} (${file.id})`);
+      } else {
+        console.log(`Directory: ${file.name} (${file.id})`);
+      }
+    })
+  
+    res.render('index', {
+      images: null,
+      videos: null
+    })
+  } catch (error){
+    console.log(error)
+  }
+})
+
+app.get('/drive/oauthcallback/', async function(req, res){
+  try{
+    const code = res.req.query.code
+    const {tokens} = await googleOauth2Client.getToken(code)
+    googleOauth2Client.setCredentials(tokens);
+    res.redirect('/drive/home')
+  } catch (error){
+    console.log(error)
+  }
+})
