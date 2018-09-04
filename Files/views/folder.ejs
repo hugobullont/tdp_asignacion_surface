@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Folder</title>
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
+    <div class="container">
+      <fieldset>
+        <% if (files != null) {%>
+          <h2>Files</h2>
+          <% for (var i = 0; i < files.length; i++) {%>
+          <% if (files[i].mimeType !== "application/vnd.google-apps.folder") {%>
+            <a href=<%="https://drive.google.com/open?id="+files[i].id%>>
+              <%= files[i].name %>
+           </a>
+          <% } else { %>
+            <a href=<%="/drive/folder/"+files[i].id%>>
+              <%= files[i].name %>
+           </a>
+          <% } %>  
+          </br>
+          <% } }%>
+      </fieldset>
+    </div>
+  </body>
+</html>
