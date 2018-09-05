@@ -1,6 +1,7 @@
 const express = require("express");
 const dropboxV2Api = require("dropbox-v2-api");
 const Dropbox = require("dropbox").Dropbox;
+var fetch = require("isomorphic-fetch");
 
 const CLIENT_ID = "gcne4yp34yo4tcr";
 const CLIENT_SECRET = "v26c0f5n88q3r8y";
@@ -27,7 +28,10 @@ router.route("/dropbox/oauthcallback").get(async function(req, res) {
     if (err) {
       console.log(code);
     } else {
-      dropbox = new Dropbox({ accessToken: response.access_token });
+      dropbox = new Dropbox({
+        accessToken: response.access_token,
+        fetch: fetch
+      });
       res.redirect("/dropbox/home");
     }
   });
@@ -35,8 +39,29 @@ router.route("/dropbox/oauthcallback").get(async function(req, res) {
 
 router.route("/dropbox/home").get(async function(req, res) {
   dropbox
-    .filesListFolder({ path: "" })
+    .filesListFolder({ path: "/aplicaciones web" })
     .then(function(response) {
+      const files = response.entries.map(file => {
+        const id = file.id;
+        const name = file.name;
+        const isFolder = file[".tag"] === "folder";
+        const url = isFolder
+          ? `/drive/folder/${id}`
+          : `https://drive.google.com/open?id=${file.id}`;
+        const newFile = {
+          id: id,
+          name: name,
+          url: url,
+          isFolder: isFolder
+        };
+        return newFile;
+      });
+
+      res.render("home", {
+        files: files,
+        title: "Dropbox Home"
+      });
+
       console.log(response);
     })
     .catch(function(error) {
@@ -44,6 +69,6 @@ router.route("/dropbox/home").get(async function(req, res) {
     });
 });
 
-router.route("/dropbox/folder/:folderId").get(async function(req, res) {});
+router.route("/dropbox/:path*").get(async function(req, res) {});
 
 module.exports = router;
