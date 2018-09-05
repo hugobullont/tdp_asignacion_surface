@@ -1,7 +1,7 @@
 const express = require("express");
 const dropboxV2Api = require("dropbox-v2-api");
 const Dropbox = require("dropbox").Dropbox;
-var fetch = require("isomorphic-fetch");
+const fetch = require("isomorphic-fetch");
 
 const CLIENT_ID = "gcne4yp34yo4tcr";
 const CLIENT_SECRET = "v26c0f5n88q3r8y";
