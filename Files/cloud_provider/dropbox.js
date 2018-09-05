@@ -38,6 +38,7 @@ router.route("/dropbox/oauthcallback").get(async function(req, res) {
 });
 
 router.route("/dropbox/home").get(async function(req, res) {
+  //TODO: FIX URL ENCODING
   dropbox
     .filesListFolder({ path: "/aplicaciones web" })
     .then(function(response) {
