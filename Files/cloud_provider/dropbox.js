@@ -38,17 +38,46 @@ router.route("/dropbox/oauthcallback").get(async function(req, res) {
 });
 
 router.route("/dropbox/home").get(async function(req, res) {
-  //TODO: FIX URL ENCODING
   dropbox
-    .filesListFolder({ path: "/aplicaciones web" })
+    .filesListFolder({ path: "" })
     .then(function(response) {
       const files = response.entries.map(file => {
         const id = file.id;
         const name = file.name;
         const isFolder = file[".tag"] === "folder";
-        const url = isFolder
-          ? `/drive/folder/${id}`
-          : `https://drive.google.com/open?id=${file.id}`;
+
+        //GET READY, FUCK YOU JAVASCRIPT AND DROPBOX :)
+        var rawFileUrl = null;
+
+        const firstIndexOfSlash = file.path_display.indexOf("/");
+        const lastIndexOfSlash = file.path_display.lastIndexOf("/");
+
+        const urlWithoutSlash = file.path_display.substring(
+          firstIndexOfSlash + 1
+        );
+        if (firstIndexOfSlash === lastIndexOfSlash) {
+          const finaUrl = urlWithoutSlash.split(" ").join("+");
+          rawFileUrl = `https://www.dropbox.com/home?preview=${finaUrl}`;
+        } else {
+          var urlForFolder = urlWithoutSlash.substring(
+            firstIndexOfSlash,
+            lastIndexOfSlash - 1
+          );
+          var urlForFile = urlWithoutSlash.substring(lastIndexOfSlash);
+
+          urlForFolder = encodeURI(urlForFolder);
+          urlForFile = urlForFile.split(" ").join("+");
+
+          rawFileUrl = `https://www.dropbox.com/home/${urlForFolder}?preview=${urlForFile}`;
+        }
+
+        var rawFolderUrl = null;
+        if (isFolder) {
+          rawFolderUrl = `${encodeURI(urlWithoutSlash)}`;
+        }
+
+        const url = isFolder ? rawFolderUrl : rawFileUrl;
+
         const newFile = {
           id: id,
           name: name,
@@ -62,14 +91,77 @@ router.route("/dropbox/home").get(async function(req, res) {
         files: files,
         title: "Dropbox Home"
       });
-
-      console.log(response);
     })
     .catch(function(error) {
       console.log(error);
     });
 });
 
-router.route("/dropbox/:path*").get(async function(req, res) {});
+router.route("/dropbox/:path*").get(async function(req, res) {
+  const path = decodeURI(req.path).replace("/dropbox", "");
+  const pathWithSlashAtTheBeginning = `/${path}`;
+  console.log(path);
+  dropbox
+    .filesListFolder({ path: pathWithSlashAtTheBeginning })
+    .then(function(response) {
+      console.log(response);
+      const files = response.entries.map(file => {
+        const id = file.id;
+        const name = file.name;
+        const isFolder = file[".tag"] === "folder";
+
+        //GET READY, FUCK YOU JAVASCRIPT AND DROPBOX :)
+        var rawFileUrl = null;
+
+        const firstIndexOfSlash = file.path_display.indexOf("/");
+        const lastIndexOfSlash = file.path_display.lastIndexOf("/");
+
+        const urlWithoutSlash = file.path_display.substring(
+          firstIndexOfSlash + 1
+        );
+        if (firstIndexOfSlash === lastIndexOfSlash) {
+          const finaUrl = urlWithoutSlash.split(" ").join("+");
+          rawFileUrl = `https://www.dropbox.com/home?preview=${finaUrl}`;
+        } else {
+          var urlForFolder = urlWithoutSlash.substring(
+            firstIndexOfSlash,
+            lastIndexOfSlash - 1
+          );
+
+          var urlForFile = urlWithoutSlash.substring(lastIndexOfSlash);
+
+          urlForFolder = encodeURI(urlForFolder);
+          urlForFile = urlForFile.split(" ").join("+");
+
+          rawFileUrl = `https://www.dropbox.com/home/${urlForFolder}?preview=${urlForFile}`;
+        }
+
+        var rawFolderUrl = null;
+        if (isFolder) {
+          rawFolderUrl = `http://localhost:3000/dropbox/${encodeURI(
+            urlWithoutSlash
+          )}`;
+        }
+
+        const url = isFolder ? rawFolderUrl : rawFileUrl;
+
+        const newFile = {
+          id: id,
+          name: name,
+          url: url,
+          isFolder: isFolder
+        };
+        return newFile;
+      });
+
+      res.render("folder", {
+        files: files,
+        title: "Dropbox Folder"
+      });
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+});
 
 module.exports = router;
