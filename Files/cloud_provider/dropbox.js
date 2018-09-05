@@ -34,7 +34,14 @@ router.route("/dropbox/oauthcallback").get(async function(req, res) {
 });
 
 router.route("/dropbox/home").get(async function(req, res) {
-  console.log("We did it");
+  dropbox
+    .filesListFolder({ path: "" })
+    .then(function(response) {
+      console.log(response);
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
 });
 
 router.route("/dropbox/folder/:folderId").get(async function(req, res) {});
