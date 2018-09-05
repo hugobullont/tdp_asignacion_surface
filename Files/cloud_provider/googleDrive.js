@@ -21,11 +21,15 @@ google.options({
 const router = express.Router();
 
 router.route("/drive").get(function(req, res) {
-  const authUrl = googleOauth2Client.generateAuthUrl({
-    access_type: "offline",
-    scope: SCOPES
-  });
-  res.redirect(authUrl);
+  if (req.session.user) {
+    res.redirect(req.session.user.path);
+  } else {
+    const authUrl = googleOauth2Client.generateAuthUrl({
+      access_type: "offline",
+      scope: SCOPES
+    });
+    res.redirect(authUrl);
+  }
 });
 
 router.route("/drive/oauthcallback").get(async function(req, res) {
@@ -33,6 +37,7 @@ router.route("/drive/oauthcallback").get(async function(req, res) {
     const code = res.req.query.code;
     const { tokens } = await googleOauth2Client.getToken(code);
     googleOauth2Client.setCredentials(tokens);
+    req.session.user = { path: "/drive/home" };
     res.redirect("/drive/home");
   } catch (error) {
     console.log(error);

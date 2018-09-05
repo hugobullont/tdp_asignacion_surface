@@ -18,8 +18,12 @@ var dropbox = null;
 const router = express.Router();
 
 router.route("/dropbox").get(function(req, res) {
-  const authUrl = dropboxOauth2Client.generateAuthUrl();
-  res.redirect(authUrl);
+  if (req.session.user) {
+    res.redirect(req.session.user.path);
+  } else {
+    const authUrl = dropboxOauth2Client.generateAuthUrl();
+    res.redirect(authUrl);
+  }
 });
 
 router.route("/dropbox/oauthcallback").get(async function(req, res) {
@@ -32,6 +36,7 @@ router.route("/dropbox/oauthcallback").get(async function(req, res) {
         accessToken: response.access_token,
         fetch: fetch
       });
+      req.session.user = { path: "/dropbox/home" };
       res.redirect("/dropbox/home");
     }
   });

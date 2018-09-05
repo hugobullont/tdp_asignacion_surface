@@ -1,9 +1,11 @@
 const express = require("express");
+const session = require("express-session");
 const googleDrive = require("./cloud_provider/googleDrive");
 const dropbox = require("./cloud_provider/dropbox");
 const oneDrive = require("./cloud_provider/oneDrive");
 
 const app = express();
+app.use(session({ secret: "TDP Demo" }));
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 
