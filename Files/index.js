@@ -11,6 +11,26 @@ app.use("/", googleDrive);
 app.use("/", dropbox);
 app.use("/", oneDrive);
 
+app.get("/", function(req, res) {
+  const providers = [
+    {
+      name: "Google Drive",
+      url: "/drive"
+    },
+    {
+      name: "Dropbox",
+      url: "/dropbox"
+    },
+    {
+      name: "OneDrive",
+      url: "/oneDrive"
+    }
+  ];
+  res.render("providers", {
+    providers: providers
+  });
+});
+
 app.listen(3000, function() {
   console.log("Listening on port 3000!");
 });
