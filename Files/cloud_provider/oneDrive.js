@@ -11,8 +11,8 @@ var ACCESS_TOKEN = "";
 const router = express.Router();
 
 router.route("/oneDrive").get(function(req, res) {
-  if (req.session.user) {
-    res.redirect(req.session.user.path);
+  if (req.session.oneDrive) {
+    res.redirect("/oneDrive/home");
   } else {
     const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${CLIENT_ID}&scope=${SCOPES}
     &response_type=code&redirect_uri=${REDIRECT_URL}`;
@@ -36,7 +36,7 @@ router.route("/oneDrive/oauthcallback").get(function(req, res) {
     function(err, response, body) {
       if (!err) {
         ACCESS_TOKEN = JSON.parse(body).access_token;
-        req.session.user = { path: "/oneDrive/home" };
+        req.session.oneDrive = true;
         res.redirect("/oneDrive/home");
       } else {
         console.log(error);

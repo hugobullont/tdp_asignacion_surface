@@ -21,8 +21,8 @@ google.options({
 const router = express.Router();
 
 router.route("/drive").get(function(req, res) {
-  if (req.session.user) {
-    res.redirect(req.session.user.path);
+  if (req.session.googleDrive) {
+    res.redirect("/drive/home");
   } else {
     const authUrl = googleOauth2Client.generateAuthUrl({
       access_type: "offline",
@@ -37,7 +37,7 @@ router.route("/drive/oauthcallback").get(async function(req, res) {
     const code = res.req.query.code;
     const { tokens } = await googleOauth2Client.getToken(code);
     googleOauth2Client.setCredentials(tokens);
-    req.session.user = { path: "/drive/home" };
+    req.session.googleDrive = true;
     res.redirect("/drive/home");
   } catch (error) {
     console.log(error);
